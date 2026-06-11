@@ -24,7 +24,7 @@ export function StudentEventsPanel({ data }: { data: StudentDashboardData }) {
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
       <PanelShell title="Sự kiện tham gia" className="min-h-0 flex-1">
-        <div className="flex flex-1 flex-col justify-center space-y-2 p-4">
+        <div className="space-y-2 p-4">
           {data.events.map((event) => (
             <div
               key={event.id}
@@ -52,7 +52,7 @@ export function StudentEventsPanel({ data }: { data: StudentDashboardData }) {
         subtitle="Học sinh → nhiều loại tương tác"
         className="min-h-0 flex-1"
       >
-        <div className="flex flex-1 flex-col justify-center space-y-2.5 p-4">
+        <div className="space-y-2.5 p-4">
           {typeCounts.map(([type, count]) => {
             const pct = Math.round((count / data.interactions.length) * 100);
             const color = INTERACTION_BAR_COLORS[type];
