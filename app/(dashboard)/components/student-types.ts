@@ -16,6 +16,46 @@ export const TRAINING_PROGRAM_LABELS: Record<TrainingProgram, string> = {
   quoc_te: "Quốc tế",
 };
 
+/** Ngành / chuyên ngành quan tâm */
+export type StudyMajor =
+  | "cntt"
+  | "kinh_te"
+  | "kinh_te_quoc_te"
+  | "quan_tri_kinh_doanh"
+  | "marketing"
+  | "tai_chinh_ngan_hang"
+  | "luat"
+  | "ngoai_ngu"
+  | "thiet_ke_do_hoa"
+  | "y_duoc"
+  | "kiem_toan";
+
+export const STUDY_MAJOR_LABELS: Record<StudyMajor, string> = {
+  cntt: "Công nghệ thông tin",
+  kinh_te: "Kinh tế",
+  kinh_te_quoc_te: "Kinh tế quốc tế",
+  quan_tri_kinh_doanh: "Quản trị kinh doanh",
+  marketing: "Marketing",
+  tai_chinh_ngan_hang: "Tài chính — Ngân hàng",
+  luat: "Luật",
+  ngoai_ngu: "Ngôn ngữ",
+  thiet_ke_do_hoa: "Thiết kế đồ họa",
+  y_duoc: "Y — Dược",
+  kiem_toan: "Kiểm toán",
+};
+
+export type MajorInterestPriority = "primary" | "secondary";
+
+export const MAJOR_PRIORITY_LABELS: Record<MajorInterestPriority, string> = {
+  primary: "Ưu tiên",
+  secondary: "Phụ",
+};
+
+export type InterestedMajor = {
+  major: StudyMajor;
+  priority: MajorInterestPriority;
+};
+
 export type AcademicRecord = {
   year: string;
   grade: "Gioi" | "Kha" | "Trung binh" | "Yeu";
@@ -35,6 +75,19 @@ export type LanguageCertificate = {
   issuedAt?: string;
 };
 
+/** Tỉnh/TP và trường THPT đang theo học */
+export type StudentHighSchool = {
+  province: string;
+  name: string;
+};
+
+/** Địa chỉ liên hệ / nơi ở */
+export type StudentAddress = {
+  province: string;
+  district?: string;
+  detail?: string;
+};
+
 export type Student = {
   id: number;
   fullName: string;
@@ -42,11 +95,13 @@ export type Student = {
   phone: string;
   cohort: string;
   dateOfBirth?: string;
-  address?: string;
-  school?: string;
+  highSchool?: StudentHighSchool;
+  homeAddress?: StudentAddress;
   academicRecords: AcademicRecord[];
   languages: LanguageCertificate[];
   interestedPrograms: TrainingProgram[];
+  /** Ngành / chuyên ngành học sinh quan tâm */
+  interestedMajors: InterestedMajor[];
   /** Nền tảng MXH học sinh quan tâm / tương tác với trường */
   socialMediaInterests: SchoolSocialMediaInterest[];
   notes?: string;
@@ -205,6 +260,17 @@ export const EVENT_STATUS_LABELS: Record<StudentEvent["status"], string> = {
   no_show: "Vắng mặt",
 };
 
+/** Sự kiện gợi ý phù hợp với hồ sơ học sinh */
+export type SuggestedEvent = {
+  id: string;
+  name: string;
+  type: StudentEvent["type"];
+  startsAt: number;
+  /** Điểm phù hợp 0–100 */
+  matchScore: number;
+  matchReason: string;
+};
+
 export type LeadScoreTier = "hot" | "warm" | "cold";
 
 export const LEAD_TIER_LABELS: Record<LeadScoreTier, string> = {
@@ -240,6 +306,7 @@ export type StudentDashboardData = {
   student: Student;
   interactions: StudentInteraction[];
   events: StudentEvent[];
+  suggestedEvents: SuggestedEvent[];
   intents: DetectedIntent[];
   leadScore: LeadScore;
 };

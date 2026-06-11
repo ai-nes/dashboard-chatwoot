@@ -8,7 +8,7 @@ import type {
   StudentEvent,
   StudentInteraction,
 } from "./student-types";
-import { INTERACTION_TYPE_LABELS } from "./student-types";
+import { INTERACTION_TYPE_LABELS, STUDY_MAJOR_LABELS } from "./student-types";
 
 const MAX_FIT = 40;
 const MAX_ENGAGEMENT = 60;
@@ -41,8 +41,23 @@ function scoreFit(student: Student): { score: number; breakdown: ScoreBreakdownI
   const breakdown: ScoreBreakdownItem[] = [];
   let score = 0;
 
+  if (student.interestedMajors.length > 0) {
+    const primary = student.interestedMajors.filter((m) => m.priority === "primary");
+    const pts = Math.min(primary.length * 10 + (student.interestedMajors.length - primary.length) * 4, 14);
+    score += pts;
+    const majorNames = student.interestedMajors
+      .map((m) => STUDY_MAJOR_LABELS[m.major])
+      .slice(0, 2)
+      .join(", ");
+    breakdown.push({
+      label: `Ngành quan tâm: ${majorNames}${student.interestedMajors.length > 2 ? "…" : ""}`,
+      points: pts,
+      category: "fit",
+    });
+  }
+
   if (student.interestedPrograms.length > 0) {
-    const pts = Math.min(student.interestedPrograms.length * 8, 16);
+    const pts = Math.min(student.interestedPrograms.length * 6, 12);
     score += pts;
     breakdown.push({
       label: `Quan tâm ${student.interestedPrograms.length} chương trình`,

@@ -7,6 +7,7 @@ import type {
   StudentDashboardData,
   StudentEvent,
   StudentInteraction,
+  SuggestedEvent,
 } from "./student-types";
 
 const now = Math.floor(Date.now() / 1000);
@@ -20,8 +21,15 @@ const MOCK_STUDENT: Student = {
   phone: "+84 901 234 567",
   cohort: "2025-2028",
   dateOfBirth: "15/08/2007",
-  address: "Quận 7, TP. Hồ Chí Minh",
-  school: "THPT Nguyễn Thị Minh Khai",
+  highSchool: {
+    province: "TP. Hồ Chí Minh",
+    name: "THPT Nguyễn Thị Minh Khai",
+  },
+  homeAddress: {
+    province: "TP. Hồ Chí Minh",
+    district: "Quận 7",
+    detail: "123 Nguyễn Văn Linh, Phường Tân Phú",
+  },
   academicRecords: [
     { year: "2022-2023", grade: "Kha" },
     { year: "2023-2024", grade: "Gioi" },
@@ -32,6 +40,10 @@ const MOCK_STUDENT: Student = {
     { language: "Tiếng Anh", certificate: "TOEIC", score: "780", issuedAt: "11/2024" },
   ],
   interestedPrograms: ["thpt_chuyen", "quoc_te", "song_ngu"],
+  interestedMajors: [
+    { major: "cntt", priority: "primary" },
+    { major: "kinh_te_quoc_te", priority: "secondary" },
+  ],
   socialMediaInterests: [
     {
       platform: "facebook",
@@ -78,7 +90,7 @@ const MOCK_STUDENT: Student = {
       recentActivities: [],
     },
   ],
-  notes: "Quan tâm chương trình Quốc tế, đã tham dự ngày hội tuyển sinh tháng trước.",
+  notes: "Ưu tiên ngành CNTT — chương trình Quốc tế, đã tham dự ngày hội tuyển sinh tháng trước.",
 };
 
 const MOCK_INTERACTIONS: StudentInteraction[] = [
@@ -132,6 +144,41 @@ const MOCK_INTERACTIONS: StudentInteraction[] = [
     summary: "Tham dự webinar về cơ chế học bổng toàn phần",
     occurredAt: day(35),
     intents: ["scholarship_inquiry"],
+  },
+];
+
+const MOCK_SUGGESTED_EVENTS: SuggestedEvent[] = [
+  {
+    id: "sug-001",
+    name: "Workshop Lập trình Python cho người mới",
+    type: "workshop",
+    startsAt: now + 5 * 86400,
+    matchScore: 92,
+    matchReason: "Phù hợp ngành CNTT",
+  },
+  {
+    id: "sug-002",
+    name: "Hội thảo Chương trình Quốc tế 2025",
+    type: "webinar",
+    startsAt: now + 12 * 86400,
+    matchScore: 88,
+    matchReason: "Quan tâm chương trình Quốc tế",
+  },
+  {
+    id: "sug-003",
+    name: "Open Day Khoa Công nghệ thông tin",
+    type: "open_day",
+    startsAt: now + 18 * 86400,
+    matchScore: 85,
+    matchReason: "Ngành ưu tiên: CNTT",
+  },
+  {
+    id: "sug-004",
+    name: "Buổi tư vấn học bổng merit",
+    type: "info_session",
+    startsAt: now + 25 * 86400,
+    matchScore: 78,
+    matchReason: "Đã hỏi về học bổng",
   },
 ];
 
@@ -201,5 +248,12 @@ export function getStudentDashboardData(context: ChatwootAppContext): StudentDas
   const intents = buildIntents(interactions);
   const leadScore = calculateLeadScore(student, interactions, intents, MOCK_EVENTS);
 
-  return { student, interactions, events: MOCK_EVENTS, intents, leadScore };
+  return {
+    student,
+    interactions,
+    events: MOCK_EVENTS,
+    suggestedEvents: MOCK_SUGGESTED_EVENTS,
+    intents,
+    leadScore,
+  };
 }

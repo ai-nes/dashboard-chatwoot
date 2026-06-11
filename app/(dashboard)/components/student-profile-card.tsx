@@ -1,11 +1,13 @@
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
-import { MailIcon, MapPinIcon, PhoneIcon, SchoolIcon } from "lucide-react";
+import { MailIcon, MapPinIcon, MapPinnedIcon, PhoneIcon, SchoolIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { PanelShell } from "./panel-shell";
 import {
   ACADEMIC_GRADE_LABELS,
+  MAJOR_PRIORITY_LABELS,
+  STUDY_MAJOR_LABELS,
   TRAINING_PROGRAM_LABELS,
   type Student,
 } from "./student-types";
@@ -18,21 +20,47 @@ const GRADE_STYLE: Record<string, string> = {
 };
 
 export function StudentProfileCard({ student }: { student: Student }) {
-  const infoItems = [
+  const contactItems = [
     { icon: MailIcon, label: "Email", value: student.email },
     { icon: PhoneIcon, label: "Số điện thoại", value: student.phone },
-    ...(student.school ? [{ icon: SchoolIcon, label: "Trường THPT", value: student.school }] : []),
-    ...(student.address ? [{ icon: MapPinIcon, label: "Địa chỉ", value: student.address }] : []),
   ];
 
   return (
     <PanelShell title="Thông tin học sinh" subtitle="Hồ sơ chi tiết & thuộc tính tuyển sinh">
       <div className="space-y-4 p-4">
         <div className="grid gap-2 sm:grid-cols-2">
-          {infoItems.map((item) => (
+          {contactItems.map((item) => (
             <InfoItem key={item.label} {...item} />
           ))}
         </div>
+
+        {student.highSchool ? (
+          <Section title="Tỉnh & Trường THPT">
+            <div className="grid gap-2 sm:grid-cols-2">
+              <InfoItem icon={MapPinnedIcon} label="Tỉnh/TP" value={student.highSchool.province} />
+              <InfoItem icon={SchoolIcon} label="Trường THPT" value={student.highSchool.name} />
+            </div>
+          </Section>
+        ) : null}
+
+        {student.homeAddress ? (
+          <Section title="Địa chỉ">
+            <div className="grid gap-2 sm:grid-cols-2">
+              <InfoItem icon={MapPinnedIcon} label="Tỉnh/TP" value={student.homeAddress.province} />
+              {student.homeAddress.district ? (
+                <InfoItem icon={MapPinIcon} label="Quận/Huyện" value={student.homeAddress.district} />
+              ) : null}
+              {student.homeAddress.detail ? (
+                <InfoItem
+                  icon={MapPinIcon}
+                  label="Địa chỉ chi tiết"
+                  value={student.homeAddress.detail}
+                  className={student.homeAddress.district ? "sm:col-span-2" : undefined}
+                />
+              ) : null}
+            </div>
+          </Section>
+        ) : null}
 
         <Section title="Niên khóa">
           <Badge variant="outline" className="border-violet-300 bg-violet-50 text-[11px] font-medium text-violet-800">
@@ -76,6 +104,28 @@ export function StudentProfileCard({ student }: { student: Student }) {
           </div>
         </Section>
 
+        <Section title="Ngành quan tâm">
+          <div className="flex flex-wrap gap-1.5">
+            {student.interestedMajors.map((item) => (
+              <Badge
+                key={item.major}
+                variant="outline"
+                className={cn(
+                  "text-[10px] font-medium",
+                  item.priority === "primary"
+                    ? "border-violet-300 bg-violet-50 text-violet-800"
+                    : "border-neutral-300 bg-neutral-50 text-neutral-700",
+                )}
+              >
+                {STUDY_MAJOR_LABELS[item.major]}
+                <span className="ml-1 font-normal opacity-70">
+                  · {MAJOR_PRIORITY_LABELS[item.priority]}
+                </span>
+              </Badge>
+            ))}
+          </div>
+        </Section>
+
         <Section title="Chương trình đào tạo quan tâm">
           <div className="flex flex-wrap gap-1.5">
             {student.interestedPrograms.map((program) => (
@@ -115,17 +165,24 @@ function InfoItem({
   icon: Icon,
   label,
   value,
+  className,
 }: {
   icon: typeof MailIcon;
   label: string;
   value: string;
+  className?: string;
 }) {
   return (
-    <div className="flex items-start gap-2 rounded-md border border-neutral-200 bg-neutral-50/50 px-2.5 py-2">
+    <div
+      className={cn(
+        "flex items-start gap-2 rounded-md border border-neutral-200 bg-neutral-50/50 px-2.5 py-2",
+        className,
+      )}
+    >
       <Icon className="mt-0.5 size-3.5 shrink-0 text-neutral-500" />
       <div className="min-w-0">
         <p className="text-[10px] text-muted-foreground">{label}</p>
-        <p className="truncate text-[11px] font-medium text-foreground">{value}</p>
+        <p className="text-[11px] font-medium leading-snug text-foreground">{value}</p>
       </div>
     </div>
   );

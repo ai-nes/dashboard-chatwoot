@@ -5,7 +5,7 @@ import { cardClass } from "./dashboard-ui";
 import { formatChannel } from "./mock-data-utils";
 import type { ChatwootAppContext } from "./types";
 import type { LeadScore, Student } from "./student-types";
-import { LEAD_TIER_LABELS } from "./student-types";
+import { LEAD_TIER_LABELS, STUDY_MAJOR_LABELS } from "./student-types";
 
 const TIER_BADGE: Record<LeadScore["tier"], string> = {
   hot: "border-emerald-300 bg-emerald-50 text-emerald-800",
@@ -53,6 +53,14 @@ export function StudentHeader({
           <p className="text-[11px] text-muted-foreground">
             Hồ sơ học sinh · Hội thoại #{context.conversation.id}
           </p>
+          {student.interestedMajors.length > 0 ? (
+            <p className="mt-0.5 truncate text-[10px] text-violet-700">
+              Ngành quan tâm:{" "}
+              {student.interestedMajors
+                .map((item) => STUDY_MAJOR_LABELS[item.major])
+                .join(" · ")}
+            </p>
+          ) : null}
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-1.5">
