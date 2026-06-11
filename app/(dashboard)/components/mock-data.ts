@@ -23,8 +23,8 @@ export const MOCK_CHATWOOT_CONTEXT: ChatwootAppContext = {
     availability_status: "online",
     last_activity_at: Math.floor(Date.now() / 1000) - 300,
     additional_attributes: {
-      company_name: "FPT Software",
-      description: "Khách hàng doanh nghiệp — quan tâm gói premium",
+      company_name: "THPT Nguyễn Thị Minh Khai",
+      description: "Học sinh lớp 12 — quan tâm chương trình Quốc tế & học bổng",
     },
   },
   conversation: {
@@ -50,28 +50,28 @@ export const MOCK_CHATWOOT_CONTEXT: ChatwootAppContext = {
     messages: [
       {
         id: 1,
-        content: "Chào shop, mình muốn hỏi về gói dịch vụ premium",
+        content: "Chào trường, em muốn hỏi điều kiện tuyển sinh chương trình Quốc tế",
         message_type: 0,
         created_at: Math.floor(Date.now() / 1000) - 1800,
         sender: { name: "Van Dai", type: "contact" },
       },
       {
         id: 2,
-        content: "Dạ chào anh Van Dai, em hỗ trợ anh ngay ạ!",
+        content: "Dạ chào em, trường em hỗ trợ tư vấn ngay ạ!",
         message_type: 1,
         created_at: Math.floor(Date.now() / 1000) - 1500,
         sender: { name: "Agent Minh", type: "user" },
       },
       {
         id: 3,
-        content: "Gói premium có hỗ trợ tích hợp API không?",
+        content: "Chương trình có học bổng merit không ạ? Học phí khoảng bao nhiêu?",
         message_type: 0,
         created_at: Math.floor(Date.now() / 1000) - 900,
         sender: { name: "Van Dai", type: "contact" },
       },
       {
         id: 4,
-        content: "Có ạ, gói premium hỗ trợ REST API và webhook đầy đủ.",
+        content: "Có ạ, học bổng lên đến 50% học phí cho học sinh có IELTS 6.5+.",
         message_type: 1,
         created_at: Math.floor(Date.now() / 1000) - 600,
         private: false,
@@ -146,7 +146,7 @@ const MOCK_INSIGHTS: ConversationInsights = {
   ],
   messageShare: [
     { key: "contact", label: "Khách hàng", value: 2 },
-    { key: "agent", label: "Agent", value: 2 },
+    { key: "agent", label: "Nhân viên", value: 2 },
   ],
   contentTypeShare: [
     { key: "text", label: "Tin nhắn", value: 4 },
@@ -159,7 +159,7 @@ const MOCK_INSIGHTS: ConversationInsights = {
       sender: "Agent Minh",
       role: "agent",
       content: "Có ạ, gói premium hỗ trợ REST API và webhook đầy đủ.",
-      channel: "Live chat",
+      channel: "Trò chuyện trực tuyến",
       createdAt: Math.floor(Date.now() / 1000) - 600,
     },
     {
@@ -167,7 +167,7 @@ const MOCK_INSIGHTS: ConversationInsights = {
       sender: "Van Dai",
       role: "contact",
       content: "Gói premium có hỗ trợ tích hợp API không?",
-      channel: "Live chat",
+      channel: "Trò chuyện trực tuyến",
       createdAt: Math.floor(Date.now() / 1000) - 900,
     },
     {
@@ -175,7 +175,7 @@ const MOCK_INSIGHTS: ConversationInsights = {
       sender: "Agent Minh",
       role: "agent",
       content: "Dạ chào anh Van Dai, em hỗ trợ anh ngay ạ!",
-      channel: "Live chat",
+      channel: "Trò chuyện trực tuyến",
       createdAt: Math.floor(Date.now() / 1000) - 1500,
     },
     {
@@ -183,7 +183,7 @@ const MOCK_INSIGHTS: ConversationInsights = {
       sender: "Van Dai",
       role: "contact",
       content: "Chào shop, mình muốn hỏi về gói dịch vụ premium",
-      channel: "Live chat",
+      channel: "Trò chuyện trực tuyến",
       createdAt: Math.floor(Date.now() / 1000) - 1800,
     },
   ],
@@ -211,7 +211,7 @@ export function getMockConversationInsights(context: ChatwootAppContext): Conver
         derivedPeriods.length >= 2 ? derivedPeriods : MOCK_INSIGHTS.messagesByPeriod,
       messageShare: [
         { key: "contact", label: "Khách hàng", value: contactCount || 2 },
-        { key: "agent", label: "Agent", value: agentCount || 2 },
+        { key: "agent", label: "Nhân viên", value: agentCount || 2 },
       ],
     };
   }
@@ -260,7 +260,7 @@ export function getMockConversationInsights(context: ChatwootAppContext): Conver
     activityVolume: [{ day: "CN", messages: messages.length }],
     messageShare: [
       { key: "contact", label: "Khách hàng", value: contactCount },
-      { key: "agent", label: "Agent", value: agentCount },
+      { key: "agent", label: "Nhân viên", value: agentCount },
     ],
     contentTypeShare: [{ key: "text", label: "Tin nhắn", value: messages.length }],
     messageHistory: messages

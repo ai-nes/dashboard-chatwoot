@@ -1,7 +1,7 @@
 export function formatChannel(channel?: string): string {
   if (!channel) return "Unknown";
-  if (channel.includes("WebWidget")) return "Live chat";
-  if (channel.includes("Email")) return "Email";
+  if (channel.includes("WebWidget")) return "Trò chuyện trực tuyến";
+  if (channel.includes("Email")) return "Thư điện tử";
   if (channel.includes("Facebook")) return "Facebook";
   if (channel.includes("WhatsApp")) return "WhatsApp";
   if (channel.includes("Telegram")) return "Telegram";

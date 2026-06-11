@@ -1,4 +1,6 @@
 import { cn } from "@/lib/utils";
+import { ACCENT_STYLES, type DashboardAccent } from "./dashboard-accents";
+import { cardClass } from "./dashboard-ui";
 import type { ContactStat } from "./types";
 
 export function StatCard({
@@ -8,19 +10,24 @@ export function StatCard({
   changeDirection = "neutral",
   description,
   icon: Icon,
-}: ContactStat) {
+  accent = "blue",
+}: ContactStat & { accent?: DashboardAccent }) {
+  const styles = ACCENT_STYLES[accent];
+
   const changeColor =
     changeDirection === "up"
-      ? "text-primary"
+      ? styles.change
       : changeDirection === "down"
-        ? "text-destructive"
+        ? "text-red-600"
         : "text-muted-foreground";
 
   return (
-    <div className="rounded-xl border border-border/60 bg-card px-4 py-3.5 shadow-sm">
+    <div className={cn(cardClass, "px-4 py-3.5")}>
       <div className="flex items-start justify-between gap-2">
         <p className="text-xs font-medium text-muted-foreground">{label}</p>
-        <Icon className="size-4 shrink-0 text-primary/80" aria-hidden />
+        <span className={cn("flex size-7 shrink-0 items-center justify-center rounded-md", styles.icon)}>
+          <Icon className="size-3.5" aria-hidden />
+        </span>
       </div>
       <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{value}</p>
       {(change || description) && (

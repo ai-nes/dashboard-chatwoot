@@ -14,7 +14,7 @@ import type { MessagesByPeriod } from "./messages-chart-data";
 
 const config = {
   contact: { label: "Khách hàng", color: "#2781f6" },
-  agent: { label: "Agent", color: "#12b981" },
+  agent: { label: "Nhân viên", color: "#12b981" },
 } satisfies ChartConfig;
 
 const axisTick = { fontSize: 10, fill: "var(--muted-foreground)" };
@@ -54,7 +54,7 @@ export function ConversationMessagesChart({ data }: { data: MessagesByPeriod[] }
               labelFormatter={(label) => `Lúc ${label}`}
               formatter={(value, name) => [
                 `${value} tin`,
-                name === "contact" ? "Khách hàng" : "Agent",
+                name === "contact" ? "Khách hàng" : "Nhân viên",
               ]}
             />
           }
