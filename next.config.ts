@@ -5,6 +5,14 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: REMOTE_IMAGE_PATTERNS,
   },
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [{ key: "Content-Security-Policy", value: "frame-ancestors *" }],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
