@@ -186,6 +186,6 @@ class ApiService {
   }
 }
 
-const apiService = new ApiService(process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/");
+const apiService = new ApiService(process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/");
 
 export default apiService;

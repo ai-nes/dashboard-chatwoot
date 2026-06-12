@@ -3,18 +3,54 @@ import { getIntentDefinition } from "./student-intents";
 import type { ChatwootAppContext } from "./types";
 import type {
   DetectedIntent,
+  SchoolSocialMediaInterest,
+  SocialMediaPlatform,
   Student,
   StudentDashboardData,
   StudentEvent,
   StudentInteraction,
   SuggestedEvent,
 } from "./student-types";
+import { SOCIAL_MEDIA_PLATFORM_LABELS } from "./student-types";
 
 const now = Math.floor(Date.now() / 1000);
 const day = (d: number) => now - d * 86400;
 const hour = (h: number) => now - h * 3600;
 
-const MOCK_STUDENT: Student = {
+export function getMockSocialMediaInterests(sourceName?: string): SchoolSocialMediaInterest[] {
+  const platformMap: Record<string, SocialMediaPlatform> = {
+    facebook: "facebook",
+    instagram: "instagram",
+    tiktok: "tiktok",
+    youtube: "youtube",
+    zalo: "zalo",
+    linkedin: "linkedin",
+    threads: "threads",
+  };
+
+  const normalizedSource = (sourceName || "facebook").toLowerCase().trim();
+  let matchedPlatform: SocialMediaPlatform = "facebook";
+
+  for (const key in platformMap) {
+    if (normalizedSource.includes(key)) {
+      matchedPlatform = platformMap[key];
+      break;
+    }
+  }
+
+  return [
+    {
+      platform: matchedPlatform,
+      isFollowing: true,
+      engagementLevel: "high",
+      handle: matchedPlatform === "facebook" ? "facebook.com/hocsinh" : `@${matchedPlatform}_user`,
+      lastActivityAt: day(3),
+      recentActivities: [`Tương tác qua kênh ${SOCIAL_MEDIA_PLATFORM_LABELS[matchedPlatform]}`],
+    },
+  ];
+}
+
+export const MOCK_STUDENT: Student = {
   id: 1001,
   fullName: "Nguyễn Văn Đại",
   email: "vandai@example.com",

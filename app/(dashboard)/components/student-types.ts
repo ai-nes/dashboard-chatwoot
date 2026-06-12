@@ -95,6 +95,8 @@ export type Student = {
   phone: string;
   cohort: string;
   dateOfBirth?: string;
+  date_of_birth?: string; // Ngày sinh từ API (snake_case)
+  source?: string;        // Nguồn lead từ API
   highSchool?: StudentHighSchool;
   homeAddress?: StudentAddress;
   academicRecords: AcademicRecord[];
@@ -302,11 +304,22 @@ export type LeadScore = {
   lastUpdated: number;
 };
 
+export type ApiList<T> = T[] | { items: T[] };
+
 export type StudentDashboardData = {
   student: Student;
   interactions: StudentInteraction[];
   events: StudentEvent[];
   suggestedEvents: SuggestedEvent[];
   intents: DetectedIntent[];
+  leadScore: LeadScore;
+};
+
+export type ApiStudentDashboardData = {
+  student: Student;
+  interactions: ApiList<StudentInteraction>;
+  events: ApiList<StudentEvent>;
+  suggestedEvents: ApiList<SuggestedEvent>;
+  intents: ApiList<DetectedIntent>;
   leadScore: LeadScore;
 };

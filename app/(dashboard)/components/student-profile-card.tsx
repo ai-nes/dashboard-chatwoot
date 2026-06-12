@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
-import { MailIcon, MapPinIcon, MapPinnedIcon, PhoneIcon, SchoolIcon } from "lucide-react";
+import { CalendarIcon, MailIcon, MapPinIcon, MapPinnedIcon, PhoneIcon, SchoolIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { PanelShell } from "./panel-shell";
@@ -24,6 +24,10 @@ export function StudentProfileCard({ student }: { student: Student }) {
     { icon: MailIcon, label: "Email", value: student.email },
     { icon: PhoneIcon, label: "Số điện thoại", value: student.phone },
   ];
+
+  if (student.dateOfBirth) {
+    contactItems.push({ icon: CalendarIcon, label: "Ngày sinh", value: student.dateOfBirth });
+  }
 
   return (
     <PanelShell title="Thông tin học sinh" subtitle="Hồ sơ chi tiết & thuộc tính tuyển sinh">
@@ -66,9 +70,6 @@ export function StudentProfileCard({ student }: { student: Student }) {
           <Badge variant="outline" className="border-violet-300 bg-violet-50 text-[11px] font-medium text-violet-800">
             {student.cohort}
           </Badge>
-          {student.dateOfBirth ? (
-            <span className="ml-2 text-[11px] text-muted-foreground">Sinh: {student.dateOfBirth}</span>
-          ) : null}
         </Section>
 
         <Section title="Học lực theo năm">
