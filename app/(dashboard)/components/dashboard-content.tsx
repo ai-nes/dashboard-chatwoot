@@ -36,7 +36,6 @@ export function DashboardContent() {
   if (isLoading) {
     return (
       <div className="min-h-full space-y-4 bg-neutral-100 p-4">
-        {/* Banner thông báo */}
         <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-xs text-blue-800">
           <div className="size-3.5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
           <span>Đang tải thông tin học sinh từ CRM...</span>
