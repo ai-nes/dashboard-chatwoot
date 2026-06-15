@@ -89,7 +89,7 @@ export type StudentAddress = {
 };
 
 export type Student = {
-  id: number;
+  id: string | number;
   fullName: string;
   email: string;
   phone: string;
@@ -195,11 +195,14 @@ export const INTENT_IMPORTANCE_LABELS: Record<IntentImportance, string> = {
 
 export type IntentKey =
   | "admission_inquiry"
+  | "admission_process"
   | "eligibility_check"
   | "scholarship_inquiry"
   | "tuition_inquiry"
   | "application_submission"
   | "enrollment_inquiry"
+  | "enrollment_intent"
+  | "deposit_intent"
   | "career_exploration"
   | "major_inquiry"
   | "major_comparison"
@@ -211,7 +214,7 @@ export type IntentKey =
   | "complaint_support";
 
 export type IntentDefinition = {
-  key: IntentKey;
+  key: string;
   label: string;
   intentType: IntentType;
   importance: IntentImportance;
@@ -219,10 +222,12 @@ export type IntentDefinition = {
 };
 
 export type DetectedIntent = {
-  key: IntentKey;
+  key: string;
   label: string;
   intentType: IntentType;
   importance: IntentImportance;
+  role?: "Dominant" | "Support" | string;
+  isDominant?: boolean;
   detectedAt: number;
   sourceInteractionId: string;
   sourceType: InteractionType;
@@ -236,7 +241,9 @@ export type StudentInteraction = {
   summary: string;
   occurredAt: number;
   channel?: string;
-  intents?: IntentKey[];
+  intents?: unknown[];
+  dominantIntent?: string | null;
+  supportIntents?: string[];
   metadata?: Record<string, string>;
 };
 
@@ -284,17 +291,23 @@ export const LEAD_TIER_LABELS: Record<LeadScoreTier, string> = {
 export type ScoreBreakdownItem = {
   label: string;
   points: number;
-  category: "fit" | "engagement";
+  category: "fit" | "engagement" | "intent" | "time_decay" | "negative" | string;
 };
 
-export const SCORE_CATEGORY_LABELS: Record<ScoreBreakdownItem["category"], string> = {
+export const SCORE_CATEGORY_LABELS: Record<string, string> = {
   fit: "Phù hợp",
   engagement: "Tương tác",
+  intent: "Ý định",
+  time_decay: "Suy giảm theo thời gian",
+  negative: "Điểm trừ",
 };
 
 export type LeadScore = {
   fitScore: number;
   engagementScore: number;
+  intentScore: number;
+  timeDecayScore: number;
+  negativeScore: number;
   totalScore: number;
   maxScore: number;
   tier: LeadScoreTier;

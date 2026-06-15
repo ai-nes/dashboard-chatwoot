@@ -248,7 +248,7 @@ function buildIntents(interactions: StudentInteraction[]): DetectedIntent[] {
     for (const key of interaction.intents ?? []) {
       const def = getIntentDefinition(key);
       intents.push({
-        key,
+        key: def.key,
         label: def.label,
         intentType: def.intentType,
         importance: def.importance,

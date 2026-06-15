@@ -79,12 +79,12 @@ function TimelineItem({ item, isLast }: { item: StudentInteraction; isLast: bool
         <p className="mt-1 text-[11px] leading-relaxed">{item.summary}</p>
         {item.intents && item.intents.length > 0 ? (
           <div className="mt-1.5 flex flex-wrap gap-1">
-            {item.intents.map((key) => {
-              const def = getIntentDefinition(key);
+            {item.intents.map((intent, index) => {
+              const def = getIntentDefinition(intent);
               const isHigh = def.importance === "very_high" || def.importance === "high";
               return (
                 <Badge
-                  key={key}
+                  key={`${def.key}-${index}`}
                   variant="outline"
                   className={cn(
                     "text-[9px] font-normal",

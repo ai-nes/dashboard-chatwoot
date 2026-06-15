@@ -115,6 +115,9 @@ export function DashboardContent() {
   const fallbackLeadScore = {
     fitScore: 0,
     engagementScore: 0,
+    intentScore: 0,
+    timeDecayScore: 0,
+    negativeScore: 0,
     totalScore: 0,
     maxScore: 100,
     tier: "cold" as const,
@@ -128,10 +131,10 @@ export function DashboardContent() {
   const rawLeadScore = dashboardData?.leadScore || fallbackLeadScore;
   const totalScore = rawLeadScore.totalScore ?? 0;
 
-  // Tính toán tier đồng bộ với điểm tổng (>= 75 là hot, >= 45 là warm, còn lại là cold)
+  // Scoring backend mới clamp final_score 0..100: hot >= 80, warm >= 50.
   let computedTier: "hot" | "warm" | "cold" = "cold";
-  if (totalScore >= 75) computedTier = "hot";
-  else if (totalScore >= 45) computedTier = "warm";
+  if (totalScore >= 80) computedTier = "hot";
+  else if (totalScore >= 50) computedTier = "warm";
 
   const safeLeadScore = {
     ...rawLeadScore,
@@ -139,8 +142,11 @@ export function DashboardContent() {
     maxScore: rawLeadScore.maxScore || 100,
     fitScore: rawLeadScore.fitScore ?? 0,
     engagementScore: rawLeadScore.engagementScore ?? 0,
+    intentScore: rawLeadScore.intentScore ?? 0,
+    timeDecayScore: rawLeadScore.timeDecayScore ?? 0,
+    negativeScore: rawLeadScore.negativeScore ?? 0,
     tier: computedTier,
-    isPotentialCustomer: computedTier === "hot" || computedTier === "warm",
+    isPotentialCustomer: totalScore >= 70,
     breakdown: rawLeadScore.breakdown || [],
     trend: rawLeadScore.trend || [],
   };

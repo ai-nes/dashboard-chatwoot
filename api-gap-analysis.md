@@ -51,15 +51,36 @@ Raw response của Frappe sẽ có dạng:
     "data": {
       "student": {},
       "interactions": { "items": [], "nextCursor": null },
-      "intents": { "items": [], "total": 0 },
+      "intents": {
+        "items": [],
+        "total": 0,
+        "dominant": [],
+        "support": []
+      },
       "events": { "items": [] },
       "suggestedEvents": { "items": [] },
-      "leadScore": {}
+      "leadScore": {
+        "fitScore": 0,
+        "engagementScore": 0,
+        "intentScore": 0,
+        "timeDecayScore": 0,
+        "negativeScore": 0,
+        "totalScore": 0,
+        "maxScore": 100,
+        "tier": "cold",
+        "isPotentialCustomer": false,
+        "breakdown": [],
+        "trend": [],
+        "lastUpdated": 1781510400
+      }
     },
     "metadata": null
   }
 }
 ```
+
+Scoring mới clamp `final_score` trong khoảng `0..100`, nên dashboard response
+trả `leadScore.maxScore = 100`.
 
 Frontend cần đọc:
 
@@ -88,10 +109,10 @@ giá trị trả về của Python method trong `response.message`.
 | **fullName** | `string` | `students[0].student_name` hoặc `contacts[0].full_name` | Khớp. FE dễ dàng lấy được. |
 | **highSchool** | `{ province: string, name: string }` | `students[0].province` & `students[0].high_school` | Khớp về thông tin, nhưng API trả về dạng phẳng. FE cần map thành nested object. |
 | **homeAddress** | `{ province, district, detail }` | `students[0].province` & `students[0].ward` | **Thiếu Quận/Huyện (`district`) và địa chỉ chi tiết (`detail`)**. API chỉ có phường/xã (`ward`). |
-| **cohort** | `string` | `students[0].admission_year` hoặc `contacts[0].cohort_start_year` | Khớp. FE có thể sử dụng năm tuyển sinh làm niên khóa. |
-| **academicRecords** | `AcademicRecord[]` | `contacts[0].academic_results` | API trả về mảng child table nhưng ví dụ đang rỗng (`[]`). Cần kiểm tra cấu trúc của table này để map đúng các trường `year` và `grade`. |
-| **languages** | `LanguageCertificate[]` | `contacts[0].language_certificates` | API trả về mảng child table nhưng đang rỗng (`[]`). Cần kiểm tra cấu trúc để map đúng `language`, `certificate`, `score`, `issuedAt`. |
-| **interestedPrograms** | `TrainingProgram[]` (mảng) | `contacts[0].education_program` (string đơn) | **Chưa khớp hoàn toàn**. API chỉ trả về một chuỗi đơn (ví dụ: `"Quốc tế"`), trong khi UI mong muốn một mảng danh sách chương trình quan tâm. |
+| **cohort** | `string` | `students[0].cohort_start_year/cohort_end_year`, fallback `contacts[0].cohort_start_year/cohort_end_year`, sau cùng `students[0].admission_year` | Khớp. Student và Contact đều có field niên khóa. |
+| **academicRecords** | `AcademicRecord[]` | `students[0].academic_results` hoặc `contacts[0].academic_results` | Khớp dữ liệu nguồn. Mapper/API dashboard cần map `school_year` -> `year`, `academic_rank` -> `grade`. |
+| **languages** | `LanguageCertificate[]` | `students[0].language_certificates` hoặc `contacts[0].language_certificates` | Khớp dữ liệu nguồn. Mapper/API dashboard cần map `certificate_name`, `score_level`, `issue_date`. |
+| **interestedPrograms** | `TrainingProgram[]` (mảng) | `students[0].education_program` hoặc `contacts[0].education_program` (string đơn) | **Chưa khớp hoàn toàn**. API chỉ trả về một chuỗi đơn (ví dụ: `"Quốc tế"`), trong khi UI mong muốn một mảng danh sách chương trình quan tâm. |
 | **interestedMajors** | `InterestedMajor[]` (mảng) | `students[0].major` và `students[0].aspiration` | **Chưa khớp**. UI cần danh sách các ngành kèm độ ưu tiên (`primary`/`secondary`). API chỉ trả về một ngành duy nhất tại thời điểm hiện tại. |
 | **socialMediaInterests**| `SchoolSocialMediaInterest[]` | *Không có* | **Thiếu hoàn toàn**. API không cung cấp thông tin tương tác của học sinh với các kênh mạng xã hội của trường (Facebook, Zalo, Tiktok...). |
 
@@ -103,26 +124,67 @@ giá trị trả về của Python method trong `response.message`.
 | **type** | `InteractionType` (enum) | `interactions[].interaction_type` | **Chưa khớp định dạng**. API trả về string hiển thị tiếng Anh của Frappe (ví dụ: `"Phone Call"`). FE cần map sang enum tương ứng (`phone_call`). |
 | **occurredAt** | `number` (epoch timestamp) | `interactions[].interaction_datetime` | **Chưa khớp định dạng**. API trả về chuỗi ngày tháng `"2026-06-12 10:00:00"`. FE cần parse chuỗi này sang timestamp. |
 | **summary** / **notes** | `string` | `interactions[].summary` / `interactions[].notes` | Khớp. |
+| **dominantIntent** | `string \| null` | `CRM Intent.intent_role == "Dominant"` trong cùng interaction | Endpoint dashboard đã map sẵn. Raw API chưa map. |
+| **supportIntents** | `string[]` | `CRM Intent.intent_role == "Support"` trong cùng interaction | Endpoint dashboard đã map sẵn. Raw API chưa map. |
 
 ### C. Phân tích ý định (`intents`)
 
-*   **Thời gian phát hiện ý định (`detectedAt`)**: API của `CRM Intent` không có trường thời gian. FE cần lấy thời gian từ bảng `interactions` tương ứng dựa trên mối quan kết qua field `interaction`.
-*   **Gom nhóm ý định (`intentType`)**: UI hiển thị ý định gom theo nhóm (Tuyển sinh, Tài chính, Học thuật...). API chỉ trả về `intent_type` dạng Link (ví dụ `"Major Inquiry"`). FE cần tự định nghĩa bảng phân loại để nhóm các `intent_type` này lại.
+Endpoint dashboard đã transform intent gần khớp UI hơn raw API:
+
+*   `items[]` có `key`, `label`, `intentType`, `importance`, `role`, `isDominant`, `detectedAt`, `sourceInteractionId`, `sourceType`, `confidence`.
+*   `dominant[]` và `support[]` đã được tách theo `CRM Intent.intent_role`.
+*   `interactions.items[].dominantIntent` và `supportIntents` cũng được map từ cùng nguồn.
+
+Gap còn lại:
+
+*   Mapping intent key đã bao phủ các intent type mới trong seed scoring như `Tuition`, `Scholarship`, `Admission Process`, `Enrollment Intent`, `Deposit Intent`.
+*   `detectedAt` hiện lấy từ `CRM Intent.modified`, không phải thời điểm interaction xảy ra. Nếu UI cần thời điểm phát hiện theo cuộc tương tác, nên dùng `CRM Interaction.interaction_datetime`.
 
 ### D. Điểm tiềm năng (`leadScore`)
 
-*   **API cung cấp**: Mảng lịch sử điểm số `score_histories`.
-*   **UI yêu cầu**: Điểm số hiện tại (`totalScore`), điểm thành phần (`fitScore`, `engagementScore`), phân loại tiềm năng (`tier`: `hot`/`warm`/`cold`), và mảng vẽ biểu đồ xu hướng.
-*   **Giải pháp**: FE có thể tự giải quyết phần này bằng cách:
-    1.  Lấy phần tử mới nhất trong `score_histories` làm điểm hiện tại.
-    2.  Map `fit_score` -> `fitScore`, `engagement_score` + `intent_score` -> `engagementScore`.
-    3.  Tự định nghĩa logic phân nhóm điểm để gán nhãn `tier` (ví dụ: >= 80 là `hot`, >= 50 là `warm`, ngược lại là `cold`).
-    4.  Sắp xếp toàn bộ mảng `score_histories` theo thời gian để tạo mảng dữ liệu vẽ biểu đồ xu hướng (`trend`).
+Scoring mới dùng công thức:
+
+```text
+non_decay = 0.4 * fit_score
+decayable = 0.3 * engagement_score + 0.3 * intent_score
+final_score = max(0, min(100, non_decay + decayable * time_decay_factor + min(0, negative_score)))
+```
+
+Với endpoint dashboard, backend đã lấy `CRM Score History` mới nhất và trả
+`leadScore` transform sẵn:
+
+| Field dashboard | Nguồn hiện tại | Ghi chú |
+|---|---|---|
+| `fitScore` | `latest_score_history.fit_score` | Khớp. |
+| `engagementScore` | `latest_score_history.engagement_score` | Khớp. |
+| `intentScore` | `latest_score_history.intent_score` | Khớp scoring mới. |
+| `timeDecayScore` | `latest_score_history.time_decay_score` | Khớp scoring mới. |
+| `negativeScore` | `latest_score_history.negative_score` | Khớp scoring mới. |
+| `totalScore` | `latest_score_history.final_score` | Khớp scoring mới, điểm đã nằm trong `0..100` nếu seed/calculator đúng. |
+| `maxScore` | hardcoded `100` | Khớp scoring mới. |
+| `tier` | `>=80 hot`, `>=50 warm`, còn lại `cold` | Khớp thang `0..100`. |
+| `isPotentialCustomer` | `totalScore >= 70` | Hợp lý với thang `0..100`. |
+| `breakdown` | `latest_score_history.details[]` | Khớp, dùng `score` và `category`. |
+| `trend` | 5 bản ghi score history gần nhất | Khớp cho chart. |
+| `lastUpdated` | `scoring_time` dạng Unix timestamp | Khớp. |
+
+Gap còn lại với scoring mới:
+
+*   `leadScore` hiện đã expose đủ `fitScore`, `engagementScore`, `intentScore`, `timeDecayScore`, `negativeScore`, `totalScore`.
+*   Nếu UI đang giả định `maxScore = 200`, cần đổi về `100` để khớp thang scoring mới.
 
 ### E. Sự kiện tuyển sinh (`events` & `suggestedEvents`)
 
-*   **Đánh giá**: **Thiếu hoàn toàn**. API hiện tại không trả về mảng danh sách sự kiện học sinh đã tham dự/đăng ký cũng như danh sách gợi ý sự kiện phù hợp. 
-*   **Hậu quả**: Panel "Sự kiện" trên UI Dashboard sẽ bị trống.
+Endpoint raw `get_student_records_by_phone` không trả event/suggested event.
+Endpoint dashboard `get_student_dashboard` đã trả:
+
+*   `events.items[]`: lấy từ `CRM Contact.crm_event` nếu có.
+*   `suggestedEvents.items[]`: lấy các `CRM Event` sắp tới, loại event đã tham dự.
+
+Gap còn lại:
+
+*   `eventStatus` hiện backend nhận param nhưng chưa filter thật.
+*   `matchScore` và `matchReason` đang hardcoded, chưa tính theo scoring/major thực tế.
 
 ---
 
@@ -215,7 +277,8 @@ GET /api/method/crm.api.get_student_dashboard?phone=...
 ```
 
 Đây là cách giải quyết nhanh nhất cho lỗi UI hiện tại, vì endpoint này đã tồn tại
-trong `crm/api/__init__.py` và được viết đúng mục tiêu dashboard. Endpoint
+trong `crm/api/student_dashboard.py` và được re-export qua `crm/api/__init__.py`
+để giữ route cũ `crm.api.get_student_dashboard`. Endpoint
 `get_student_records_by_phone` nên giữ vai trò API raw/debug hoặc dùng cho các màn
 hình cần dữ liệu Frappe nguyên bản.
 

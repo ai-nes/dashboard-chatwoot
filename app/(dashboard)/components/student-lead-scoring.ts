@@ -15,8 +15,8 @@ const MAX_ENGAGEMENT = 60;
 const MAX_TOTAL = MAX_FIT + MAX_ENGAGEMENT;
 
 const TIER_THRESHOLDS: { tier: LeadScoreTier; min: number }[] = [
-  { tier: "hot", min: 75 },
-  { tier: "warm", min: 45 },
+  { tier: "hot", min: 80 },
+  { tier: "warm", min: 50 },
   { tier: "cold", min: 0 },
 ];
 
@@ -189,10 +189,13 @@ export function calculateLeadScore(
   return {
     fitScore: fit.score,
     engagementScore: engagement.score,
+    intentScore: 0,
+    timeDecayScore: 0,
+    negativeScore: 0,
     totalScore,
     maxScore: MAX_TOTAL,
     tier,
-    isPotentialCustomer: tier === "hot" || tier === "warm",
+    isPotentialCustomer: totalScore >= 70,
     breakdown: [...fit.breakdown, ...engagement.breakdown].sort((a, b) => b.points - a.points),
     trend: buildTrend(totalScore),
     lastUpdated: Math.floor(Date.now() / 1000),

@@ -8,6 +8,13 @@ export const INTENT_DEFINITIONS: Record<IntentKey, IntentDefinition> = {
     importance: "very_high",
     engagementPoints: 25,
   },
+  admission_process: {
+    key: "admission_process",
+    label: "Quy trình tuyển sinh",
+    intentType: "admission",
+    importance: "very_high",
+    engagementPoints: 25,
+  },
   eligibility_check: {
     key: "eligibility_check",
     label: "Kiểm tra điều kiện",
@@ -42,6 +49,20 @@ export const INTENT_DEFINITIONS: Record<IntentKey, IntentDefinition> = {
     intentType: "admission",
     importance: "very_high",
     engagementPoints: 25,
+  },
+  enrollment_intent: {
+    key: "enrollment_intent",
+    label: "Có ý định nhập học",
+    intentType: "admission",
+    importance: "very_high",
+    engagementPoints: 30,
+  },
+  deposit_intent: {
+    key: "deposit_intent",
+    label: "Có ý định đặt cọc",
+    intentType: "financial",
+    importance: "very_high",
+    engagementPoints: 30,
   },
   career_exploration: {
     key: "career_exploration",
@@ -108,6 +129,69 @@ export const INTENT_DEFINITIONS: Record<IntentKey, IntentDefinition> = {
   },
 };
 
-export function getIntentDefinition(key: IntentKey): IntentDefinition {
-  return INTENT_DEFINITIONS[key];
+const INTENT_ALIASES: Record<string, IntentKey> = {
+  admission_process: "admission_process",
+  "admission process": "admission_process",
+  enrollment_intent: "enrollment_intent",
+  "enrollment intent": "enrollment_intent",
+  deposit_intent: "deposit_intent",
+  "deposit intent": "deposit_intent",
+  scholarship: "scholarship_inquiry",
+  tuition: "tuition_inquiry",
+};
+
+function isIntentObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function getIntentValue(value: unknown, field: string): string | undefined {
+  if (!isIntentObject(value)) return undefined;
+  const rawValue = value[field];
+  return typeof rawValue === "string" && rawValue.trim() ? rawValue : undefined;
+}
+
+function getIntentKey(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+
+  return (
+    getIntentValue(value, "key") ??
+    getIntentValue(value, "intentKey") ??
+    getIntentValue(value, "intent_type") ??
+    getIntentValue(value, "intentType") ??
+    getIntentValue(value, "label") ??
+    getIntentValue(value, "name") ??
+    "unknown_intent"
+  );
+}
+
+function normalizeIntentKey(key: string): string {
+  return key.trim().toLowerCase().replace(/[-\s]+/g, "_");
+}
+
+function formatUnknownIntentLabel(key: string): string {
+  return key
+    .trim()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+export function getIntentDefinition(intent: unknown): IntentDefinition {
+  const key = getIntentKey(intent);
+  const normalizedKey = normalizeIntentKey(key);
+  const knownKey = INTENT_ALIASES[normalizedKey] ?? normalizedKey;
+  const definition = INTENT_DEFINITIONS[knownKey as IntentKey];
+
+  if (definition) return definition;
+
+  const label = getIntentValue(intent, "label") ?? getIntentValue(intent, "intent_label");
+
+  return {
+    key,
+    label: label ?? formatUnknownIntentLabel(key) ?? "Ý định chưa phân loại",
+    intentType: "support",
+    importance: "medium",
+    engagementPoints: 0,
+  };
 }

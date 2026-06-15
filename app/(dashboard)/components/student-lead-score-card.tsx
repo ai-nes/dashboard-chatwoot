@@ -31,19 +31,20 @@ const TIER_BADGE: Record<LeadScore["tier"], string> = {
 };
 
 export function StudentLeadScoreCard({ leadScore }: { leadScore: LeadScore }) {
-  const pct = Math.round((leadScore.totalScore / leadScore.maxScore) * 100);
+  const maxScore = leadScore.maxScore || 100;
+  const pct = Math.max(0, Math.min(100, Math.round((leadScore.totalScore / maxScore) * 100)));
 
   return (
     <PanelShell
       title="Điểm tiềm năng"
-      subtitle={`${SCORE_CATEGORY_LABELS.fit} + ${SCORE_CATEGORY_LABELS.engagement} · Cập nhật ${formatRelativeTime(leadScore.lastUpdated)}`}
+      subtitle={`Fit + engagement + intent · Cập nhật ${formatRelativeTime(leadScore.lastUpdated)}`}
       className="h-full"
     >
       <div className="flex flex-col gap-4 p-4">
         <div className="rounded-lg border border-neutral-300 bg-neutral-50/50 px-4 py-5 text-center">
           <div className={cn("text-4xl font-bold tabular-nums tracking-tight", TIER_SCORE_COLOR[leadScore.tier])}>
             {leadScore.totalScore}
-            <span className="text-lg font-medium text-muted-foreground">/{leadScore.maxScore}</span>
+            <span className="text-lg font-medium text-muted-foreground">/{maxScore}</span>
           </div>
           <p className="mt-1 text-[11px] text-muted-foreground">{pct}% mức độ quan tâm</p>
           <Badge variant="outline" className={cn("mt-2 text-[10px] font-medium", TIER_BADGE[leadScore.tier])}>
@@ -59,12 +60,17 @@ export function StudentLeadScoreCard({ leadScore }: { leadScore: LeadScore }) {
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          <ScorePill label={SCORE_CATEGORY_LABELS.fit} score={leadScore.fitScore} max={40} color="violet" />
+          <ScorePill label={SCORE_CATEGORY_LABELS.fit} score={leadScore.fitScore} color="violet" />
           <ScorePill
             label={SCORE_CATEGORY_LABELS.engagement}
             score={leadScore.engagementScore}
-            max={60}
             color="emerald"
+          />
+          <ScorePill label={SCORE_CATEGORY_LABELS.intent} score={leadScore.intentScore} color="blue" />
+          <ScorePill
+            label="Điểm trừ"
+            score={leadScore.timeDecayScore + leadScore.negativeScore}
+            color="neutral"
           />
         </div>
 
@@ -75,7 +81,7 @@ export function StudentLeadScoreCard({ leadScore }: { leadScore: LeadScore }) {
           <ChartContainer config={trendConfig} className="aspect-auto h-[72px] w-full">
             <LineChart data={leadScore.trend} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
               <XAxis dataKey="date" hide />
-              <YAxis domain={[0, leadScore.maxScore]} hide />
+              <YAxis domain={[0, maxScore]} hide />
               <ChartTooltip content={<ChartTooltipContent hideLabel />} />
               <Line
                 type="monotone"
@@ -106,25 +112,43 @@ export function StudentLeadScoreCard({ leadScore }: { leadScore: LeadScore }) {
 function ScorePill({
   label,
   score,
-  max,
   color,
 }: {
   label: string;
   score: number;
-  max: number;
-  color: "violet" | "emerald";
+  color: "violet" | "emerald" | "blue" | "neutral";
 }) {
-  const pct = Math.round((score / max) * 100);
-  const barColor = color === "violet" ? "bg-violet-500" : "bg-emerald-500";
-  const border = color === "violet" ? "border-violet-200" : "border-emerald-200";
-  const text = color === "violet" ? "text-violet-700" : "text-emerald-700";
+  const pct = Math.max(0, Math.min(100, Math.abs(score)));
+  const barColor =
+    color === "violet"
+      ? "bg-violet-500"
+      : color === "emerald"
+        ? "bg-emerald-500"
+        : color === "blue"
+          ? "bg-blue-500"
+          : "bg-neutral-400";
+  const border =
+    color === "violet"
+      ? "border-violet-200"
+      : color === "emerald"
+        ? "border-emerald-200"
+        : color === "blue"
+          ? "border-blue-200"
+          : "border-neutral-200";
+  const text =
+    color === "violet"
+      ? "text-violet-700"
+      : color === "emerald"
+        ? "text-emerald-700"
+        : color === "blue"
+          ? "text-blue-700"
+          : "text-neutral-600";
 
   return (
     <div className={cn("rounded-lg border bg-white px-2.5 py-2 text-center", border)}>
       <p className={cn("text-[10px] font-medium", text)}>{label}</p>
       <p className="text-sm font-semibold tabular-nums">
         {score}
-        <span className="text-xs font-normal text-muted-foreground">/{max}</span>
       </p>
       <div className="mt-1 h-1 overflow-hidden rounded-full bg-neutral-100">
         <div className={cn("h-full rounded-full", barColor)} style={{ width: `${pct}%` }} />
@@ -134,16 +158,28 @@ function ScorePill({
 }
 
 function BreakdownRow({ item }: { item: ScoreBreakdownItem }) {
+  const categoryLabel = SCORE_CATEGORY_LABELS[item.category] ?? item.category;
+  const signedPoints = item.points > 0 ? `+${item.points}` : String(item.points);
+
   return (
     <li className="flex items-center justify-between gap-2 text-[10px]">
-      <span className="min-w-0 truncate text-muted-foreground">{item.label}</span>
+      <span className="min-w-0 truncate text-muted-foreground">
+        {item.label}
+        <span className="ml-1 text-neutral-400">({categoryLabel})</span>
+      </span>
       <span
         className={cn(
           "shrink-0 font-semibold tabular-nums",
-          item.category === "fit" ? "text-violet-600" : "text-emerald-600",
+          item.points < 0
+            ? "text-red-600"
+            : item.category === "fit"
+              ? "text-violet-600"
+              : item.category === "intent"
+                ? "text-blue-600"
+                : "text-emerald-600",
         )}
       >
-        +{item.points}
+        {signedPoints}
       </span>
     </li>
   );

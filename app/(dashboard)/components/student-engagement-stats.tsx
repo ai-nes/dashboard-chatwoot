@@ -49,7 +49,7 @@ export function StudentEngagementStats({ data }: { data: StudentDashboardData })
       value: String(data.leadScore.totalScore),
       change: data.leadScore.isPotentialCustomer ? "Tiềm năng" : "Nuôi dưỡng",
       changeDirection: data.leadScore.isPotentialCustomer ? "up" : "neutral",
-      description: `${SCORE_CATEGORY_LABELS.fit} ${data.leadScore.fitScore} + ${SCORE_CATEGORY_LABELS.engagement} ${data.leadScore.engagementScore}`,
+      description: `${SCORE_CATEGORY_LABELS.fit} ${data.leadScore.fitScore} · ${SCORE_CATEGORY_LABELS.engagement} ${data.leadScore.engagementScore} · ${SCORE_CATEGORY_LABELS.intent} ${data.leadScore.intentScore}`,
       icon: SparklesIcon,
       accent: "emerald",
     },
